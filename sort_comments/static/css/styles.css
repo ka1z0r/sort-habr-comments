@@ -13,14 +13,12 @@ body {
 ul {
     list-style-type: none;
     margin: 0;
-    /*flex: 9;*/
-    /*padding: 0;*/
 }
 
 pre { white-space: normal; }
 
 form {
-    margin-top: 50px;
+    margin-top: 30px;
     text-align: center;
 }
 

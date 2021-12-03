@@ -1,18 +1,26 @@
 from django.shortcuts import render
 import requests
 from bs4 import BeautifulSoup
+import re
 
 
 # Create your views here.
 def index(request):
-    base_url = "https://habr.com/ru/post/591109/comments/"
+    base_url = "http://habr.com"
+    if request.method == 'POST':
+        if re.match(r'^\b(https://)?habr.com(/\w+)+/', request.POST['habr_url']):
+            base_url = request.POST['habr_url']
+            if not base_url.endswith('comments/', -8):
+                if base_url.endswith('/', -1):
+                    base_url = base_url + 'comments/'
+                else:
+                    base_url = base_url + '/comments/'
+
     r = requests.get(base_url)
     c = r.content
     soup = BeautifulSoup(c, 'html.parser')
-    # comments = soup.find("div", {"class": "tm-comments__tree"})
     comments = soup.find_all("article", {"class": "tm-comment-thread__comment"})
     all_comments = []
-    i = 0
     for article in comments:
         comment = {}
         # try/except для отлова удаленных комментариев
@@ -20,18 +28,22 @@ def index(request):
             comment['username'] = article.find("a", {"class": "tm-user-info__userpic"}).get('title')
             comment['user_url'] = "https://habr.com" + article.find("a", {"class": "tm-user-info__username"})['href']
             comment['time'] = article.find("a", {"class": "tm-comment-thread__comment-link"}).get_text().strip()
-            # comment['raw_comment'] = str(article.find("div", {"class": "tm-comment__body-content"}).contents[0])
             comment['raw_comment'] = str(article.find("div", {"class": "tm-comment__body-content"}))
             comment['comment_url'] = base_url + article.find("a", {"class": "tm-comment-thread__comment-link"}).get(
                 'href')
             comment['score'] = article.find("span", {"class": "tm-votes-meter__value_rating"}).get_text()
             comment['score'] = int(comment['score'].replace("+", "").replace("–", "-"))
-            comment['id'] = i
-            i += 1
+            votes = re.findall(r'↑\d+|↓\d+',
+                               article.find("span", {"class": "tm-votes-meter__value_rating"}).get('title'))
+            comment['controversy'] = min(int(votes[0][1:]), int(votes[1][1:]))
+            comment['votes'] = votes[0] + ' ' + votes[1]
             all_comments.append(comment)
         except:
             pass
 
-    all_comments.sort(key=lambda d: d['score'], reverse=True)
+    if request.POST.get('Sort By:') == 'top':
+        all_comments.sort(key=lambda d: d['score'], reverse=True)
+    elif request.POST.get('Sort By:') == 'controversial':
+        all_comments.sort(key=lambda d: d['controversy'], reverse=True)
 
     return render(request, "index.html", {'comments': all_comments})
