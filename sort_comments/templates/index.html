@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sort habr comments</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+<form method="POST">
+    {% csrf_token %}
+    <input type="text" name="habr_url" value="{{ habr_url }}" placeholder="https://habr.com/ru/post/348728/">
+    <button type="submit">Submit</button>
+</form>
+<ul>
+    {% if comments %}
+    {% for comment in comments %}
+    <li>
+        <h4><a target="_blank" href="{{ comment.user_url }}">{{ comment.username }}</a> <span class='score'> {{ comment.score }}</span>
+            {{ comment.time }} <a target="_blank" href="{{ comment.comment_url }}">Перейти к комментарию {{ comment.id }}</a></h4>
+        <pre>{{ comment.raw_comment|safe }}</pre>
+    </li>
+    {% endfor %}
+    {% endif %}
+</ul>
+</body>
+</html>
