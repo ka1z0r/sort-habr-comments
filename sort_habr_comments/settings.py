@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-@p3zlap*zez#k4
 # DEBUG = True
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
-ALLOWED_HOSTS = ['https://sort-habr-comments.herokuapp.com/', '127.0.0.1']
+ALLOWED_HOSTS = ['sort-habr-comments.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
